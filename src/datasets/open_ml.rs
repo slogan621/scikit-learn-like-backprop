@@ -22,6 +22,18 @@ enum OpenMLParser {
     Auto,
 }
 
+#[derive(Clone, Debug)]
+pub enum OpenMLParserRet {
+    // Vector of vectors
+    VecOfVecs(Vec<Vec<u8>>),
+    /// A Pandas (Polars) dataframe
+    Pandas(DataFrame),
+}
+
+impl Default for OpenMLParserRet {
+    fn default() -> Self { OpenMLParserRet::VecOfVecs(vec![])}
+}
+
 #[derive(Default, Clone, Debug)]
 pub struct FetchOpenMLBuilder  {
     /// String identifier of the dataset. Note that OpenML can have multiple datasets with the same name.
@@ -127,7 +139,7 @@ impl FetchOpenMLBuilder {
         self
     }
 
-    pub fn fetch_openml(&self) -> Result<Vec<Vec<u8>>, DatasetError>{
+    pub fn fetch_openml(&self) -> Result<OpenMLParserRet, DatasetError>{
         let ret; 
         match self.data_id {
             Some(val) => {
@@ -188,10 +200,12 @@ impl FetchOpenMLBuilder {
                 .unwrap();
                 
                 println!("{}", df);
+                return Ok(OpenMLParserRet::Pandas(df));
             },
             _ => {},
         }
-        Ok(ret)
+        // return default
+        Ok(OpenMLParserRet::VecOfVecs(ret))
     }
 }
 
@@ -199,23 +213,19 @@ impl FetchOpenMLBuilder {
 mod tests {
     use super::*;
 
-    /* 
-
-    #[test]
-    fn can_create_open_ml_builder() {
-        let builder = FetchOpenMLBuilder::new().with_data_id(554);
-        println!("builder is {:?}", builder.clone());
-    }
-    */
-
     #[test]
     fn can_download_mnist_from_openml_as_dataframe() {
         let builder = FetchOpenMLBuilder::new().with_data_id(554).with_data_type(MLDataType::Minst).with_cache(true).with_as_frame(true);
 
         println!("builder is {:?}", builder.clone());
         let data = builder.fetch_openml().unwrap();
-        //println!("in test data is {:?}", data);
-        assert!(1 == 0);
+        match data {
+            OpenMLParserRet::Pandas(df) => {
+                println!("in test data is {:?}", df);
+                assert_eq!(df.shape(), (70000, 2));
+            },
+           OpenMLParserRet::VecOfVecs(_) => { panic!("expected pandas but got VecOfVec"); }
+        }
     }
 
     /* 
@@ -232,14 +242,23 @@ mod tests {
         assert_eq!(data1, data2);
         assert!(1 == 0);
     }
+    */
     #[test]
-    fn can_download_mnist_from_openml_as_frame() {
-        let builder = FetchOpenMLBuilder::new().with_data_id(554).with_cache(true);
+    fn can_download_mnist_from_openml_as_vec_of_vec() {
+        let builder = FetchOpenMLBuilder::new().with_data_id(554).with_data_type(MLDataType::Minst).with_cache(true);
 
         println!("builder is {:?}", builder.clone());
-        let data1 = builder.fetch_openml().unwrap();
-        println!("data1 is {:?}", data1);
-        assert!(1 == 0);
+        let data = builder.fetch_openml().unwrap();
+        match data {
+            OpenMLParserRet::VecOfVecs(v) => {
+                //println!("in test data is {:?}", data);
+                assert_eq!(v.len(), 70000);
+                println!("size of vector is {:?}", v.len());
+                let csized: Vec<_> = v.clone().into_iter().filter(|x| x.len() == 785).collect();
+                assert_eq!(v.len(), csized.len());
+
+            },
+            OpenMLParserRet::Pandas(_) => { panic!("expected VecOfVec but got Pandas"); }
+        }
     }
-    */
 }
