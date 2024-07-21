@@ -6,7 +6,7 @@ use std::io::{self, Read, Write};
 use curl::easy::Easy;
 use directories::ProjectDirs;
 
-use crate::datasets::error::DatasetError;
+use crate::openml::error::DatasetError;
 
 pub fn get(url: &str, cached: bool) -> Result<Vec<u8>, DatasetError> {
     match cached {

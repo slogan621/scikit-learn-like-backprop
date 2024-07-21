@@ -1,12 +1,12 @@
 
-use crate::datasets::web_access;
-use crate::datasets::error::DatasetError;
-use crate::datasets::minst::parse_minst;
+use crate::openml::web_access;
+use crate::openml::error::DatasetError;
+use crate::openml::minst::parse_minst;
 use serde_json::Value;
 use polars::prelude::*;
 
 #[derive(Default, Clone, Debug)]
-enum MLDataType {
+pub enum MLDataType {
     #[default]
     Minst,
 }
@@ -80,51 +80,51 @@ impl FetchOpenMLBuilder {
         };
     } 
 
-    fn with_name(&mut self, _name: String) -> &mut FetchOpenMLBuilder {
+    pub fn with_name(&mut self, _name: String) -> &mut FetchOpenMLBuilder {
         todo!();
     }
     
-    fn with_version(mut self, version: u16) -> Self {
+    pub fn with_version(mut self, version: u16) -> Self {
         self.version = Some(version);
         self
     }
 
-    fn with_data_id(mut self, data_id: u16) -> Self {
+    pub fn with_data_id(mut self, data_id: u16) -> Self {
         self.data_id = Some(data_id);
         self
     }
 
-    fn with_data_home(mut self, data_home: String) -> Self  {
+    pub fn with_data_home(mut self, data_home: String) -> Self  {
         self.data_home = Some(data_home);
         self
     }
 
-    fn with_target_columns(mut self, columns: Vec<String>) -> Self {
+    pub fn with_target_columns(mut self, columns: Vec<String>) -> Self {
         self.target_columns = columns;
         self
     }
 
-    fn with_cache(mut self, cache: bool) -> Self {
+    pub fn with_cache(mut self, cache: bool) -> Self {
         self.cache = cache;
         self
     }
 
-    fn with_return_x_y(mut self, return_x_y: bool) -> Self {
+    pub fn with_return_x_y(mut self, return_x_y: bool) -> Self {
         self.return_x_y = return_x_y;
         self
     }
 
-    fn with_as_frame(mut self, as_frame: bool) -> Self {
+    pub fn with_as_frame(mut self, as_frame: bool) -> Self {
         self.as_frame = as_frame;
         self
     }
 
-    fn with_n_retries(mut self, n_retries: i16) -> Self {
+    pub fn with_n_retries(mut self, n_retries: i16) -> Self {
         self.n_retries = n_retries;
         self
     }
 
-    fn with_delay(mut self, delay: u32) -> Self {
+    pub fn with_delay(mut self, delay: u32) -> Self {
         self.delay = delay;
         self
     }
@@ -134,7 +134,7 @@ impl FetchOpenMLBuilder {
         self
     }
 
-    fn with_data_type(mut self, data_type: MLDataType) -> Self {
+    pub fn with_data_type(mut self, data_type: MLDataType) -> Self {
         self.data_type = data_type;
         self
     }

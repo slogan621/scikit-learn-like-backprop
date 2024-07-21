@@ -1,5 +1,5 @@
 use arff;
-use crate::datasets::error::DatasetError;
+use crate::openml::error::DatasetError;
 
 fn remove_whitespace(s: &mut String) {
     //s.retain(|c| !c.is_whitespace());
