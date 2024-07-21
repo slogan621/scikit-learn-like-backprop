@@ -145,7 +145,6 @@ impl FetchOpenMLBuilder {
             Some(val) => {
                 let path = format!("{}/{}", self.base_url, val);
                 let data = web_access::get(&path, false)?; 
-                //let v: Value = serde_json::from_str(&data)?;
                 let v: Value = serde_json::from_slice(&data)?;
                 // now get the url of the actual data
                 println!("json is {:?}", v);
@@ -153,21 +152,11 @@ impl FetchOpenMLBuilder {
                 println!("data_url is {:?}", data_url);
                 // read the data
                 let mut data = web_access::get(&data_url.as_str().unwrap(), self.cache)?; 
-                //println!("in fetch_openml data is {:?}", data);
-                /* 
-                    let values = data.as_bytes();
-                    println!("SYD size of data is {:?}", values.len());
-                    println!("first value is {:?}", values[0]);
-                    */
                 match self.data_type {
                     MLDataType::Minst => {
                         ret = parse_minst(&mut data)?;
-                        //println!("ret from parse_minst {:?}", _ret);
                     },
                 }
-                    //println!("as bytes is {:?}", values);
-                    //let arfres: Vec<[u8]> = arff::flat_from_str(&data).unwrap();
-                    //println!("arfres is {:?}", arfres);
             },
             _ => {
                 return Err(DatasetError::MissingID); 
@@ -228,30 +217,13 @@ mod tests {
         }
     }
 
-    /* 
-
-    #[test]
-    fn can_download_mnist_from_openml_cached() {
-        let builder = FetchOpenMLBuilder::new().with_data_id(554).with_cache(true);
-
-        println!("builder is {:?}", builder.clone());
-        let data1 = builder.fetch_openml().unwrap();
-        println!("data1 is {:?}", data1);
-        let data2 = builder.fetch_openml().unwrap();
-        println!("data2 is {:?}", data2);
-        assert_eq!(data1, data2);
-        assert!(1 == 0);
-    }
-    */
     #[test]
     fn can_download_mnist_from_openml_as_vec_of_vec() {
         let builder = FetchOpenMLBuilder::new().with_data_id(554).with_data_type(MLDataType::Minst).with_cache(true);
 
-        println!("builder is {:?}", builder.clone());
         let data = builder.fetch_openml().unwrap();
         match data {
             OpenMLParserRet::VecOfVecs(v) => {
-                //println!("in test data is {:?}", data);
                 assert_eq!(v.len(), 70000);
                 println!("size of vector is {:?}", v.len());
                 let csized: Vec<_> = v.clone().into_iter().filter(|x| x.len() == 785).collect();
