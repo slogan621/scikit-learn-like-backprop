@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 directories = "5.0.1"
 arff = "0.3.0"
-polars = "0.40.0"
+polars = {version = "0.41.3", features = ["dtype-u8"]}
 curl = "0.4.46"
 serde_json = "1.0.1"

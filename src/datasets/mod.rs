@@ -1,2 +1,3 @@
-mod petals;
+mod minst;
 mod xor;
+mod petals;

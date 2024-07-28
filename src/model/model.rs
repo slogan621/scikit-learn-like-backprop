@@ -14,5 +14,5 @@ use polars::frame::DataFrame;
 
 pub trait Model {
     fn load_data() -> DataFrame;
-    fn split_data(split_point: u32) -> (Vec<u8>, Vec<u8>);
+    fn split_data(df: &DataFrame) -> (DataFrame, DataFrame);
 }

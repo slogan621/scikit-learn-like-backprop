@@ -8,7 +8,7 @@ impl Model for Xor {
         todo!("implement me");
     }
 
-    fn split_data(split_point: u32) -> (Vec<u8>, Vec<u8>) {
+    fn split_data(df: &DataFrame) -> (DataFrame, DataFrame) {
         todo!("implement me");
     }
 }

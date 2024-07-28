@@ -147,9 +147,7 @@ impl FetchOpenMLBuilder {
                 let data = web_access::get(&path, false)?; 
                 let v: Value = serde_json::from_slice(&data)?;
                 // now get the url of the actual data
-                println!("json is {:?}", v);
                 let data_url = &v["data_set_description"]["url"];
-                println!("data_url is {:?}", data_url);
                 // read the data
                 let mut data = web_access::get(&data_url.as_str().unwrap(), self.cache)?; 
                 match self.data_type {
@@ -164,31 +162,32 @@ impl FetchOpenMLBuilder {
         }
         match self.as_frame { 
             true => {
-                let mut pixels : Vec<Vec<u8>> = vec![];
-                let mut digits : Vec<Vec<u8>> = vec![];
+                let mut pixels : Vec<Series> = vec![];
+                let mut digits : Vec<u8> = vec![];
                 for val in ret.clone() {
-                    let y = val.clone()
-                        .into_iter()
-                        .enumerate()
-                        .filter(|&(i, _)| i == 784)
-                        .map(|(_, e)| e)
-                        .collect();
-                    digits.push(y);
-                    let y = val
-                        .into_iter()
-                        .enumerate()
-                        .filter(|&(i, _)| i < 784)
-                        .map(|(_, e)| e)
-                        .collect();
-                    pixels.push(y);
+                    let y = &val[0..val.len() - 1];
+                    let list = Series::new("pixels", y);
+                    pixels.push(list);
+                    digits.push(val[val.len() - 1]);
                 }
+
                 let df: DataFrame = df!(
                     "pixels" => Series::new("pixels", pixels),
                     "digit" => Series::new("digit", digits),
                 )
                 .unwrap();
-                
-                println!("{}", df);
+
+                /* Following shows how to get 3 rows (1, 2, 3) from the df: 
+                let indices = IdxCa::new("idx", 1..4);
+                let new_df = df.take(&indices).unwrap();
+                println!("df 1..4 {:?}", new_df);
+                */
+
+                /* Following shows how to get the pixels column from the 
+                   dataframe 
+                let column_pixels: &Series = new_df.column("pixels").unwrap();
+                println!("column_pixels is {:?}", column_pixels);
+                */
                 return Ok(OpenMLParserRet::Pandas(df));
             },
             _ => {},
@@ -210,7 +209,6 @@ mod tests {
         let data = builder.fetch_openml().unwrap();
         match data {
             OpenMLParserRet::Pandas(df) => {
-                println!("in test data is {:?}", df);
                 assert_eq!(df.shape(), (70000, 2));
             },
            OpenMLParserRet::VecOfVecs(_) => { panic!("expected pandas but got VecOfVec"); }
@@ -225,7 +223,6 @@ mod tests {
         match data {
             OpenMLParserRet::VecOfVecs(v) => {
                 assert_eq!(v.len(), 70000);
-                println!("size of vector is {:?}", v.len());
                 let csized: Vec<_> = v.clone().into_iter().filter(|x| x.len() == 785).collect();
                 assert_eq!(v.len(), csized.len());
 
