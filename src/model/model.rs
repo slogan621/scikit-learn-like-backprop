@@ -14,5 +14,5 @@ use polars::frame::DataFrame;
 
 pub trait Model {
     fn load_data() -> DataFrame;
-    fn split_data(df: &DataFrame) -> (DataFrame, DataFrame);
+    fn test_train_split(df: &DataFrame, test_size: Option<f32>, train_size: Option<f32>) -> (DataFrame, DataFrame, DataFrame, DataFrame);
 }

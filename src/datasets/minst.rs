@@ -19,7 +19,7 @@ impl Model for Minst {
         }
     }
 
-    fn split_data(df: &DataFrame) -> (DataFrame, DataFrame) {
+    fn test_train_split(df: &DataFrame, test_size: Option<f32>, train_size: Option<f32>) -> (DataFrame, DataFrame, DataFrame, DataFrame) {
         todo!("implement me");
         /* 
         let foo = df.to_nd
@@ -58,11 +58,13 @@ mod tests {
     fn can_load_and_split_minst_data() {
         let df = Minst::load_data();
         assert_eq!(df.shape(), (70000, 2));
-        let (x, y) = Minst::split_data(&df);
+        let (x_train, y_train, x_test, y_test) = Minst::test_train_split(&df, None, None);
+        /* 
         assert_eq!(x.n_chunks(), 1);
         println!("x is {:?}", x);
         assert_eq!(y.n_chunks(), 1);
         println!("y is {:?}", y);
+        */
         assert_eq!(1, 2);
     }
 }
