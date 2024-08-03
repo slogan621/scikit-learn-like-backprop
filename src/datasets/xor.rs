@@ -1,13 +1,11 @@
 use polars::frame::DataFrame;
 use crate::model::model::Model;
+use crate::model::error::ModelError;
 
 struct Xor;
 
 impl Model for Xor {
-    fn load_data() -> DataFrame {
-        todo!("implement me");
-    }
-    fn test_train_split(df: &DataFrame, test_size: Option<f32>, train_size: Option<f32>) -> (DataFrame, DataFrame, DataFrame, DataFrame) {
+    fn load_data() -> Result<DataFrame, ModelError> {
         todo!("implement me");
     }
 }

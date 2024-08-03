@@ -1,46 +1,21 @@
 use polars::frame::DataFrame;
-use polars::datatypes::IdxCa;
-use polars::prelude::NamedFrom;
 use crate::model::model::Model;
+use crate::model::error::ModelError;
 use crate::openml::open_ml::{OpenMLParserRet, FetchOpenMLBuilder, MLDataType};
 
 struct Minst;
 
 impl Model for Minst {
-    fn load_data() -> DataFrame {
+    fn load_data() -> Result<DataFrame, ModelError> {
         let builder = FetchOpenMLBuilder::new().with_data_id(554).with_data_type(MLDataType::Minst).with_cache(true).with_as_frame(true);
 
         let data = builder.fetch_openml().unwrap();
         match data {
             OpenMLParserRet::Pandas(df) => {
-                return df;
+                return Ok(df);
             },
-            _ => { panic!("unexpected result from fetch_openml {:?}", data); }
+            _ => { return Err(ModelError::UnableToLoadData); },
         }
-    }
-
-    fn test_train_split(df: &DataFrame, test_size: Option<f32>, train_size: Option<f32>) -> (DataFrame, DataFrame, DataFrame, DataFrame) {
-        todo!("implement me");
-        /* 
-        let foo = df.to_nd
-        // select setosa and versicolor
-        y = df.iloc[0:100, 4].values
-        y = np.where(y == 'Iris-setosa', 0, 1)
-        // extract sepal length and petal length
-        y = df.iloc[0:100, [0, 2]].values
-/*
-        let (width, _) = df.shape();
-        let w: u32 = width.try_into().unwrap();
-        let indices = IdxCa::new("idx", w - 1..w);
-        let y = df.take(&indices).unwrap();
-        //y = np.where(y == 'Iris-setosa', 0, 1)
-        // extract sepal length and petal length
-        // pandas X = df.iloc[0:, [0, 1]].values
-        let indices = IdxCa::new("idx", 0..w - 1);
-        let x = df.take(&indices).unwrap();
-        */
-        return (x, y)
-        */
     }
 }
 
@@ -51,21 +26,51 @@ mod tests {
     #[test]
     fn can_load_minst_data() {
         let df = Minst::load_data();
-        assert_eq!(df.shape(), (70000, 2));
+        assert_eq!(df.unwrap().shape(), (70000, 2));
     }
 
     #[test]
-    fn can_load_and_split_minst_data() {
-        let df = Minst::load_data();
+    fn cannnot_load_and_split_minst_data_no_sizes() {
+        let df = Minst::load_data().unwrap();
         assert_eq!(df.shape(), (70000, 2));
-        let (x_train, y_train, x_test, y_test) = Minst::test_train_split(&df, None, None);
-        /* 
-        assert_eq!(x.n_chunks(), 1);
-        println!("x is {:?}", x);
-        assert_eq!(y.n_chunks(), 1);
-        println!("y is {:?}", y);
-        */
-        assert_eq!(1, 2);
+        let ret = Minst::test_train_split(&df, None, None);
+
+        assert!(ret.is_err());
+    }
+
+    #[test]
+    fn cannnot_load_and_split_minst_data_both_sizes() {
+        let df = Minst::load_data().unwrap();
+        assert_eq!(df.shape(), (70000, 2));
+        let ret = Minst::test_train_split(&df, Some(0.4), Some(0.6));
+
+        assert!(ret.is_err());
+    }
+
+    #[test]
+    fn can_load_and_split_minst_data_with_train_size() {
+        let df = Minst::load_data().unwrap();
+        assert_eq!(df.shape(), (70000, 2));
+        let ret = Minst::test_train_split(&df, None, Some(0.6));
+
+        assert!(!ret.is_err());
+        let (test, train) = ret.unwrap();
+        println!("test {:?} train {:?}", test, train);
+        assert_eq!(test.shape().0, 28_000);
+        assert_eq!(train.shape().0, 42_000);
+    }
+
+    #[test]
+    fn can_load_and_split_minst_data_with_test_size() {
+        let df = Minst::load_data().unwrap();
+        assert_eq!(df.shape(), (70000, 2));
+        let ret = Minst::test_train_split(&df, Some(0.2), None);
+
+        assert!(!ret.is_err());
+        let (test, train) = ret.unwrap();
+        println!("test {:?} train {:?}", test, train);
+        assert_eq!(test.shape().0, 14_000);
+        assert_eq!(train.shape().0, 56_000);
     }
 }
 
