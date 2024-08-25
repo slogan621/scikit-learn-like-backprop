@@ -11,6 +11,9 @@ pub enum LoadMethod {
 */
 
 use polars::frame::DataFrame;
+use polars::series::Series;
+use polars::df;
+use polars::error::PolarsError;
 use crate::model::error::ModelError;
 
 pub trait Model {
@@ -56,5 +59,44 @@ pub trait Model {
         let train_res = df.tail(Some(size_train));
 
         Ok((test_res, train_res))
+    }
+}
+
+fn data_frame_to_option_u8_vec(df: &DataFrame, idx: usize) -> Result<Vec<Option<u8>>, ModelError> {
+    if let s = df.select_at_idx(idx) {
+        let as_vec: Vec<Option<u8>> = s.expect("unable to select from df").u8().expect("unable to iconvert to u8").into_iter().collect();
+        return Ok(as_vec);
+    } else {
+        return Err(ModelError::UnableToExtractFieldFromDataFrame(idx));
+    }
+}
+
+fn data_frame_to_u8_vec(df: &DataFrame, idx: usize) -> Result<Vec<u8>, ModelError> {
+    if let s = df.select_at_idx(idx) {
+        let as_vec: Vec<u8> = s.expect("unable to select from df").u8().expect("Unable to convert to u8").into_no_null_iter().collect();
+        Ok(as_vec)
+    } else {
+        return Err(ModelError::UnableToExtractFieldFromDataFrame(idx));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn can_convert_dataframe_to_vec_u8() {
+        let df = df! [
+            "names" => ["a", "b", "c"],
+            "values" => [1u8, 2u8, 3u8],
+            "values_nulls" => [Some(1u8), None, Some(3u8)]
+        ].unwrap();
+
+        let as_vec = data_frame_to_u8_vec(&df, 1).unwrap();
+        assert_eq!(as_vec.len(), 3);
+        assert_eq!(as_vec, [1u8, 2u8, 3u8]);
+        let as_vec = data_frame_to_option_u8_vec(&df, 2).unwrap();
+        assert_eq!(as_vec.len(), 3);
+        assert_eq!(as_vec, [Some(1u8), None, Some(3u8)]);
     }
 }
