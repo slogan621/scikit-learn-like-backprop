@@ -1,14 +1,4 @@
 use polars::error::PolarsError;
-
-/* 
-#[derive(Debug)]
-pub enum ModelError {
-    UnableToLoadData,
-    InvalidTestTrainSplitArgs,
-    UnableToConvertDataFrameToVec(PolarsError),
-}
-*/
-
 use thiserror::Error;
 
 #[derive(Error, Debug)]
