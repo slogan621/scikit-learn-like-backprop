@@ -55,7 +55,6 @@ mod tests {
 
         assert!(!ret.is_err());
         let (test, train) = ret.unwrap();
-        println!("test {:?} train {:?}", test, train);
         assert_eq!(test.shape().0, 28_000);
         assert_eq!(train.shape().0, 42_000);
     }
@@ -68,7 +67,6 @@ mod tests {
 
         assert!(!ret.is_err());
         let (test, train) = ret.unwrap();
-        println!("test {:?} train {:?}", test, train);
         assert_eq!(test.shape().0, 14_000);
         assert_eq!(train.shape().0, 56_000);
     }
